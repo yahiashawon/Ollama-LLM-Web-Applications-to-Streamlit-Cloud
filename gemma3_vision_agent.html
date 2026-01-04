@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemma 3 Vision Agent for Research</title>
+    <style>
+        /* CSS for a clean, academically-focused interface */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
+        .container { background-color: #fff; border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); width: 1000px; padding: 30px; }
+        .header { text-align: center; margin-bottom: 30px; color: #1a73e8; }
+        .header h1 { font-size: 28px; margin-bottom: 5px; font-weight: 600; }
+        .content { display: flex; gap: 30px; }
+        .left-panel { flex: 4; }
+        .right-panel { flex: 6; }
+        
+        /* Input and Button Styling */
+        .upload-section { border: 3px dashed #ccc; border-radius: 8px; padding: 40px 20px; text-align: center; cursor: pointer; transition: border-color 0.3s; margin-bottom: 20px; }
+        .upload-section:hover { border-color: #1a73e8; background-color: #e8f0fe; }
+        .upload-section svg { width: 50px; height: 50px; fill: #1a73e8; margin-bottom: 10px; }
+        .image-preview { max-width: 100%; max-height: 250px; object-fit: contain; margin-top: 10px; border-radius: 4px; border: 1px solid #ccc; padding: 5px; }
+        
+        #question-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1em; }
+        
+        .buttons-section { display: flex; gap: 10px; margin-bottom: 20px; }
+        .buttons-section button { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background-color 0.3s; }
+        #analyze-button { background-color: #1a73e8; color: white; }
+        #analyze-button:hover:not(:disabled) { background-color: #0d47a1; }
+        #analyze-button:disabled { background-color: #9e9e9e; cursor: not-allowed; }
+        #reset-button { background-color: #f0f2f5; color: #333; border: 1px solid #ccc; }
+
+        /* Response and API Info */
+        .model-response-box { border: 1px solid #ddd; padding: 20px; min-height: 300px; border-radius: 6px; white-space: pre-wrap; background-color: #fafafa; line-height: 1.6; font-size: 0.95em; }
+        .model-response-title { font-weight: 600; margin-bottom: 10px; color: #333; display: flex; align-items: center; }
+        .model-response-title span { margin-left: 8px; }
+        .api-info { background-color: #e8f0fe; padding: 15px; border-radius: 6px; font-size: 0.85em; margin-top: 20px; border-left: 4px solid #1a73e8; }
+        #loading-indicator { color: #1a73e8; font-weight: bold; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👁️ Gemma 3 Vision Agent</h1>
+            <p>Adaptive AI for multimodal analysis and decision-making in computational research.</p>
+        </div>
+        
+        <div class="content">
+            <div class="left-panel">
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                
+                <div class="upload-section" id="upload-area">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 12h-4V8h-2v4H9v2h4v4h2v-4h4v-2zM7 2a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5H7zm0 2h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z"/></svg>
+                    <p><strong>Upload Research Image</strong></p>
+                    <p>Click or drag-and-drop a visualization, plot, or experimental image here.</p>
+                </div>
+                
+                <img id="image-preview" class="image-preview" src="#" alt="Image Preview" style="display: none;">
+
+                <label for="question-input" style="font-weight: 600;">Ask the Agent (Optional Analytical Query):</label>
+                <input type="text" id="question-input" placeholder="e.g., Identify anomalies in the data plot or suggest the next experimental parameter adjustment." />
+                
+                <div class="buttons-section">
+                    <button id="analyze-button">🔬 Execute Analysis</button>
+                    <button id="reset-button">C Reset</button>
+                </div>
+
+                <div class="api-info">
+                    <p>This tool communicates with the **Ollama API** to leverage your local **Gemma 3** model.</p>
+                    <p>Endpoint: <code>http://localhost:11434/api/chat</code></p>
+                    <p>Model Configured: <code>gemma3:latest</code></p>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="model-response-title">
+                    <span>◼️ Model Response Documentation</span>
+                </div>
+                <div id="model-response" class="model-response-box">
+                    **Methodology Note:** The model response will be generated here. Ensure your research queries are detailed and contextually rich to elicit the most analytically rigorous results suitable for documentation.
+                </div>
+                <div id="loading-indicator">Processing request... Please wait for Gemma 3 inference.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadInput = document.getElementById('image-upload');
+        const uploadArea = document.getElementById('upload-area');
+        const imagePreview = document.getElementById('image-preview');
+        const analyzeButton = document.getElementById('analyze-button');
+        const resetButton = document.getElementById('reset-button');
+        const questionInput = document.getElementById('question-input');
+        const modelResponse = document.getElementById('model-response');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        let base64Image = null; 
+        const OLLAMA_API_ENDPOINT = 'http://localhost:11434/api/chat';
+        // CRITICAL CONFIGURATION: Ensure this model name matches the one you pulled (e.g., 'gemma3:12b' if you pulled that variant)
+        const MODEL_NAME = 'gemma3:latest'; 
+
+        // --- File Processing and Base64 Encoding ---
+        uploadArea.addEventListener('click', () => uploadInput.click());
+        uploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) { processImage(file); }
+        });
+
+        function processImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                uploadArea.style.display = 'none';
+                
+                // Extract the raw Base64 string for the Ollama API payload
+                const dataURL = e.target.result;
+                base64Image = dataURL.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Drag-and-drop implementation for robust file handling (omitted dragover/leave handlers for brevity)
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+            document.body.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                uploadInput.files = e.dataTransfer.files;
+                processImage(file);
+            }
+        }, false);
+        
+        // --- Core API Communication Logic ---
+        analyzeButton.addEventListener('click', async () => {
+            if (!base64Image) {
+                alert("Error: Please upload an image file before execution.");
+                return;
+            }
+
+            // Define the default analytical task if no specific question is provided
+            const userQuestion = questionInput.value.trim() || 
+                "Perform a deep technical analysis of this image. Identify key objects, labels, and the overall context. Format the output as a coherent, publishable-quality research paragraph.";
+            
+            const requestBody = {
+                model: MODEL_NAME,
+                messages: [
+                    {
+                        role: "user",
+                        content: userQuestion,
+                        images: [base64Image] // Base64 encoding is the key to multimodal input
+                    }
+                ],
+                stream: false 
+            };
+
+            modelResponse.textContent = "";
+            loadingIndicator.style.display = 'block';
+            analyzeButton.disabled = true;
+
+            try {
+                const response = await fetch(OLLAMA_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error Status: ${response.status}. Check Ollama logs.`);
+                }
+
+                const data = await response.json();
+                const modelText = data.message.content || "Error: Model returned no content.";
+                modelResponse.textContent = modelText;
+
+            } catch (error) {
+                console.error('Ollama API Communication Error:', error);
+                modelResponse.textContent = `**Critical API Failure:** Could not connect to the local service. Ensure 'ollama serve' is running and the model '${MODEL_NAME}' is loaded. Details: ${error.message}`;
+            } finally {
+                loadingIndicator.style.display = 'none';
+                analyzeButton.disabled = false;
+            }
+        });
+
+        // --- Reset Functionality ---
+        resetButton.addEventListener('click', () => {
+            uploadInput.value = '';
+            imagePreview.src = '#';
+            imagePreview.style.display = 'none';
+            uploadArea.style.display = 'block';
+            questionInput.value = '';
+            modelResponse.textContent = '**Methodology Note:** The model response will be generated here. Ensure your research queries are detailed and contextually rich to elicit the most analytically rigorous results suitable for documentation.';
+            base64Image = null;
+            analyzeButton.disabled = false;
+            loadingIndicator.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
