@@ -10,7 +10,7 @@ An adaptive AI system for multimodal image analysis and decision-making in compu
 
 ## 📋 Overview
 
-This application provides a research-grade interface for performing deep technical analysis on scientific visualizations, experimental plots, and computational physics imagery using the Gemma 3 vision-language model. The system employs a client-side JavaScript architecture embedded within Streamlit for seamless multimodal inference workflows.
+This application offers a research-grade interface for conducting in-depth technical analysis on scientific visualizations, experimental plots, and computational physics imagery, utilizing the Gemma 3 vision-language model. The system employs a client-side JavaScript architecture embedded within Streamlit for seamless multimodal inference workflows.
 
 ### Key Features
 
@@ -144,7 +144,7 @@ The interface will be available at: `http://localhost:8501`
 
 ```
 ollama-vision-agent/
-├── streamlit_app.py              # Main Streamlit application entry point
+├── app.py              # Main Streamlit application entry point
 ├── gemma3_vision_agent.html      # Embedded HTML/JS interface with API logic
 ├── requirements.txt              # Python dependencies
 ├── README.md                     # This file
@@ -153,7 +153,7 @@ ollama-vision-agent/
 
 ### File Descriptions
 
-- **`streamlit_app.py`**: Orchestrates Streamlit page configuration and embeds the HTML interface using `st.components.v1.html()`
+- **`app.py`**: Orchestrates Streamlit page configuration and embeds the HTML interface using `st.components.v1.html()`
 - **`gemma3_vision_agent.html`**: Contains the complete frontend logic including image processing, base64 encoding, Ollama API communication, and response rendering
 
 ---
@@ -183,7 +183,7 @@ const OLLAMA_API_ENDPOINT = 'http://your-server-ip:11434/api/chat';
 
 ### Streamlit Interface Settings
 
-Adjust the embedded HTML height in `streamlit_app.py`:
+Adjust the embedded HTML height in `app.py`:
 
 ```python
 components.html(html_content, height=1000, scrolling=True)  # Modify height as needed
@@ -281,47 +281,6 @@ ollama pull gemma3:latest
 
 ---
 
-## 🔬 Research Applications
-
-This tool is designed for accelerating scientific discovery in computational physics and experimental research contexts. Potential applications include:
-
-- **High Energy Physics**: Analysis of particle collision visualizations and detector readouts
-- **Experimental Data Validation**: Automated anomaly detection in experimental plots
-- **Literature Analysis**: Extraction of information from scientific figures in papers
-- **Computational Simulations**: Interpretation of simulation output visualizations
-- **Multi-Modal Scientific Reasoning**: Combining visual and textual information for hypothesis generation
-
----
-
-## 📊 Performance Considerations
-
-### Hardware Requirements
-
-- **Minimum**: 8GB RAM, 10GB disk space
-- **Recommended**: 16GB RAM, NVIDIA GPU with 8GB+ VRAM for faster inference
-- **Model Size**: Gemma 3 requires ~4-8GB storage depending on variant
-
-### Inference Speed
-
-- **CPU**: 2-10 seconds per image analysis (model-dependent)
-- **GPU (CUDA)**: 0.5-2 seconds per image analysis
-
-Enable GPU acceleration on Windows:
-```powershell
-[Environment]::SetEnvironmentVariable("OLLAMA_CUDA", "1", "User")
-```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Areas for enhancement:
-
-- [ ] Support for batch image processing
-- [ ] Multi-turn conversational context with image history
-- [ ] Export functionality for analysis reports (PDF, Markdown)
-- [ ] Integration with additional vision models (LLaVA, BakLLaVA)
-- [ ] Fine-tuning capabilities for domain-specific physics tasks
 
 ### Development Setup
 
@@ -338,16 +297,7 @@ Contributions are welcome! Areas for enhancement:
 
 This project is licensed under the MIT License.
 
----
 
-## 🙏 Acknowledgments
-
-- **Ollama Team**: For providing the local LLM inference framework
-- **Google DeepMind**: For the Gemma 3 vision-language architecture
-- **Streamlit**: For the rapid web application deployment framework
-- **Institute of High Energy Physics (IHEP)**: Research institutional support
-
----
 
 ## 📧 Contact
 
